@@ -9,6 +9,7 @@
   #mlr_reflections$learner_predict_types$riesz <- list(natural = "natural", shifted = "shifted")
   mlr_reflections$learner_predict_types$riesz <- list(response = "response")
 
+  mlr_learners$add(key = "riesz.nn", LearnerRieszNN)
   mlr_learners$add(key = "riesz.torch", LearnerRieszTorch)
   mlr_learners$add(key = "riesz.glm", LearnerRieszGLM)
 }
