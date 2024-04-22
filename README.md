@@ -16,9 +16,7 @@ $$
 \mathbb{E}[m(O, f)] = \mathbb{E}[\alpha(X) f(X)].
 $$
 
-Th random variable $\alpha(X)$ is called the _Riesz Representer_ of $\theta$. 
-
-This package estimates the Riesz Representer $\alpha$ by solving the minimization problem
+The random variable $\alpha(X)$ is called the _Riesz Representer_ of $\theta$. This package estimates the Riesz Representer $\alpha$ by solving the minimization problem
 
 $$
 \hat{\alpha} = \arg\min_{\alpha \in \mathcal{A}} \frac{1}{n} \sum_{i=1}^n \alpha(X_i)^2-2 m(O_i, \alpha).
@@ -27,10 +25,17 @@ $$
 For more details, [_RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests_](https://proceedings.mlr.press/v162/chernozhukov22a/chernozhukov22a.pdf) by Chernozhukov et al. (2022) has a nice overview of the theory. See also [_Automatic Debiased Machine Learning via Riesz Regression_](https://arxiv.org/abs/2104.14737) by Chernozhukov et al. (2021).
 
 ## Usage
-The key function is `super_riesz`. The argument `m` allows for customization of the causal parameter of interest for which the Riesz Representer is estimated. 
+The primary function is `super_riesz`. 
+
+Arguments:
+- `data`: data frame containing all observations.
+- `alternatives`: named list containing any alternative versions of the dataset. 
+- `library`: vector or list of candidate learners.
+- `m`: function defining the parameter mapping.
+- `discrete`: boolean indicating whether to estimate a discrete (`TRUE`) or continuous (`FALSE`) Super Learner.
 
 ## Example
-Estimate the Riesz Representer for the Average Treatment Effect: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W]] - \mathbb{E}[Y \mid A = 0, W]]$. 
+Estimate the Riesz Representer for the Average Treatment Effect: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W]] - \mathbb{E}[Y \mid A = 0, W]]$. Define $\bar{Q}(A, W) = \mathbb{E}[Y \mid A, W]$. Then $m(O, \bar{Q}) = \bar{Q}(1, W) - \bar{Q}(0, W)$.  
 ```
 # Simulate data
 library(tidyverse)
@@ -63,14 +68,18 @@ predict(fit, data[, vars])
 ## Learners
 
 ### `torch`
-Neural network learner based on `torch`.
+Simple neural network learner based on `torch`.
 
 Parameters:
 - `hidden`: number of neurons in each hidden layer (integer)
 - `learning_rate`: training learning rate (positive float)
 - `epochs`: number of training epochs (integer)
 - `dropout`: dropout in hidden layer during training (float between 0 and 1)
+- `constrain_positive`: whether to constrain predictions to be positive (true or false)
 - `seed`: torch random seed (optional)
 
 ### `glm`
 Linear learner based on `optim`. 
+
+Parameters:
+- `constrain_positive`: whether to constrain predictions to be positive (true or false)
