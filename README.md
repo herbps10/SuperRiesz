@@ -11,14 +11,17 @@ remotes::install_github("herbps10/SuperRiesz")
 Suppose we observe data $O = (W, A, Y)$ where $W$ is a vector of covariates, $A$ a vector of binary or continuous treatment variables, and $Y$ a binary or continuous outcome. Let $A^d$ be a _modified_ or _shifted_ version of $A$. Let $\mathcal{B}$ be a conditioning set. Define the target parameter of interest as $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W] | A \in \mathcal{B}]$. 
 
 Note that $\theta$ is a linear functional of $\mathbb{E}[Y \mid A = A^d, W]$. Therefore, by the Riesz Representation Theorem, there exists a function $\alpha$ such that, for all $f$ with $\mathbb{E}[f(A, W)^2] < \infty$,
+
 $$
 \mathbb{E}[f(A^d, W)] = \mathbb{E}[\alpha(A, W) f(A, W)].
 $$
+
 This function $\alpha$ is called the _Riesz Representer_ of $\theta$. 
 
 This package estimates the Riesz Representer $\alpha$ by solving the minimization problem
+
 $$
-\hat{\alpha} = \arg \min_{\alpha^* \in \mathcal{A}} \mathbb{E}_n \left[ \alpha^*(A, W)^2 - 2 \alpha^*(A^d, W) \right]. 
+\hat{\alpha} = \arg\min_{\alpha \in \mathcal{A}} \frac{1}{n} \sum_{i=1}^n \alpha(A_i, W_i)^2-2\alpha(A_i^d, W_i). 
 $$
 
 For more details, [_RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests_](https://arxiv.org/abs/2110.03031) by Chernozhukov et al. (2022) has a nice overview of the theory. 
