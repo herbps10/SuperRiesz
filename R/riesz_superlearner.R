@@ -23,7 +23,13 @@ riesz_superlearner_weights <- function(learners, task, folds) {
 #'
 #' @import mlr3
 #' @export
-super_riesz <- function(data, alternatives, library, m = \(alpha, data) alpha(data()), folds = 5, discrete = TRUE) {
+super_riesz <- function(data, library, alternatives = list(), m = \(alpha, data) alpha(data()), folds = 5, discrete = TRUE) {
+  checkmate::assert_vector(library, min.len = 1)
+  checkmate::assert_function(m)
+  checkmate::assert_int(folds, lower = 1)
+  checkmate::assert_list(alternatives)
+  checkmate::assert_logical(discrete)
+
   task <- TaskRiesz$new(id = "superriesz", backend = data, alternatives = alternatives, m = m)
 
   if(is.list(library)) {
