@@ -5,10 +5,13 @@ torch_estimate_representer <-
            hidden = 20,
            epochs = 500,
            learning_rate = 1e-3,
+           seed = 1,
            m = \(natural, shifted) shifted,
            dropout = 0.1) {
     d_in <- ncol(natural)
     d_out <- 1
+
+    torch::torch_manual_seed(seed)
 
     natural <- torch::torch_tensor(as.matrix(natural), dtype = torch::torch_float())
     shifted <- torch::torch_tensor(as.matrix(shifted), dtype = torch::torch_float())
@@ -72,7 +75,8 @@ LearnerRieszTorch <- R6::R6Class(
         hidden = p_int(1L, default = 20L, tags = "train"),
         epochs = p_int(1L, default = 20L, tags = "train"),
         dropout = p_dbl(0, 1, default = 0.1, tags = "train"),
-        learning_rate = p_dbl(default = 1e3, tags = "train")
+        learning_rate = p_dbl(default = 1e3, tags = "train"),
+        seed = p_int(1L, default = 1L,  tags = "train")
       )
 
       super$initialize(
@@ -110,10 +114,6 @@ LearnerRieszTorch <- R6::R6Class(
         )
     },
     .predict = function(task) {
-      #shifted <- self$model(torch::torch_tensor(as.matrix(task$shifted()), dtype = torch::torch_float()))
-      #conditional_mean <- torch::torch_tensor(task$conditional_indicator())$mean(dtype = torch::torch_float())
-      #list(response = torch::as_array(natural * conditional_mean)[, 1])
-
       natural <- self$model(torch::torch_tensor(as.matrix(task$natural()), dtype = torch::torch_float()))
       list(response = torch::as_array(natural)[, 1])
     }

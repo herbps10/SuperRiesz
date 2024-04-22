@@ -15,7 +15,8 @@ glm_estimate_representer <- function(natural,
   }
 
   pars <- numeric(ncol(natural) + 1)
-  beta <- optim(pars, fn = loss)$par
+  x <- optim(pars, fn = loss, lower = -20, upper = 20, method = "L-BFGS-B")
+  beta <- x$par
   beta
 }
 
@@ -39,9 +40,10 @@ LearnerRieszGLM <- R6::R6Class(
       m_natural <- as.matrix(cbind(1, natural))
       m_shifted <- as.matrix(cbind(1, shifted))
       conditional_indicator <- task$conditional_indicator()
-      mean(
+      l <- mean(
         exp(m_natural %*% self$model)^2 - 2 * task$m(exp(m_natural %*% self$model), exp(m_shifted %*% self$model), conditional_indicator, mean(conditional_indicator))
       )
+      l
     }
   ),
   private = list(
@@ -61,8 +63,7 @@ LearnerRieszGLM <- R6::R6Class(
     },
     .predict = function(task) {
       data <- task$natural()
-      response <-
-        exp(as.matrix(cbind(1, data)) %*% self$model)
+      response <- exp(as.matrix(cbind(1, data)) %*% self$model)
       list(response = response)
     }
   )

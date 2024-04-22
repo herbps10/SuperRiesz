@@ -31,7 +31,8 @@ TaskRiesz <- R6::R6Class(
       private$.backend_shifted$data(rows, cols, data_format)
     },
     conditional_indicator = function() {
-      private$.conditional_indicator
+      rows <- private$.row_roles$use
+      private$.conditional_indicator[rows]
     }
   ),
   private = list(
