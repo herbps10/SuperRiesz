@@ -8,7 +8,7 @@ remotes::install_github("herbps10/SuperRiesz")
 ```
 
 ## Mathematical Background
-Suppose we observe data $O = (W, A, Y)$ where $W$ is a vector of covariates, $A$ a vector of binary or continuous treatment variables, and $Y$ a binary or continuous outcome. Let $A^d$ be a _modified_ or _shifted_ version of $A$. Let $\mathcal{B}$ be a conditioning set. Define the target parameter of interest as $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W] | A \in \mathcal{B}]$. 
+Suppose we observe data $O = (W, A, Y)$ where $W$ is a vector of covariates, $A$ a vector of binary or continuous treatment variables, and $Y$ a binary or continuous outcome. Let $A^d$ be a _shifted_ version of $A$. Let $\mathcal{B}$ be a conditioning set. Define the target parameter of interest as $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W] | A \in \mathcal{B}]$. 
 
 Note that $\theta$ is a linear functional of $\mathbb{E}[Y \mid A = A^d, W]$. Therefore, by the Riesz Representation Theorem, there exists a function $\alpha$ such that, for all $f$ with $\mathbb{E}[f(A, W)^2] < \infty$,
 $$
