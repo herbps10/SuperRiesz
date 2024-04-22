@@ -8,33 +8,29 @@ remotes::install_github("herbps10/SuperRiesz")
 ```
 
 ## Mathematical Background
-Suppose we observe data $O = (W, A, Y)$ where $W$ is a vector of covariates, $A$ a vector of binary or continuous treatment variables, and $Y$ a binary or continuous outcome. Let $A^d$ be a _shifted_ version of $A$. Let $\mathcal{B}$ be a conditioning set. Define the target parameter of interest as $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W] | A \in \mathcal{B}]$. 
+Suppose we observe data $O = (Y, X)$ where $Y$ is an outcome and $X$ a vector. Define the target parameter of interest as $\theta = \mathbb{E}[m(O, \bar{Q})]$ where $m$ is an arbitrary function and $\bar{Q}(X) = \mathbb{E}[Y \mid X]$. 
 
-Note that $\theta$ is a linear functional of $\mathbb{E}[Y \mid A = A^d, W]$. Therefore, by the Riesz Representation Theorem, there exists a function $\alpha$ such that, for all $f$ with $\mathbb{E}[f(A, W)^2] < \infty$,
+If $\theta$ is a continuous linear functional of $\bar{Q}$, then by the Riesz Representation Theorem there exists a random variable $\alpha(X)$ such that, for all $f$ with $\mathbb{E}[f(X)^2] < \infty$,
 
 $$
-\mathbb{E}[f(A^d, W)] = \mathbb{E}[\alpha(A, W) f(A, W)].
+\mathbb{E}[m(O, f)] = \mathbb{E}[\alpha(X) f(X)].
 $$
 
-This function $\alpha$ is called the _Riesz Representer_ of $\theta$. 
+Th random variable $\alpha(X)$ is called the _Riesz Representer_ of $\theta$. 
 
 This package estimates the Riesz Representer $\alpha$ by solving the minimization problem
 
 $$
-\hat{\alpha} = \arg\min_{\alpha \in \mathcal{A}} \frac{1}{n} \sum_{i=1}^n \alpha(A_i, W_i)^2-2\alpha(A_i^d, W_i). 
+\hat{\alpha} = \arg\min_{\alpha \in \mathcal{A}} \frac{1}{n} \sum_{i=1}^n \alpha(X_i)^2-2 m(O_i, \alpha).
 $$
 
-For more details, [_RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests_](https://arxiv.org/abs/2110.03031) by Chernozhukov et al. (2022) has a nice overview of the theory. 
+For more details, [_RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests_](https://proceedings.mlr.press/v162/chernozhukov22a/chernozhukov22a.pdf) by Chernozhukov et al. (2022) has a nice overview of the theory. See also [_Automatic Debiased Machine Learning via Riesz Regression_](https://arxiv.org/abs/2104.14737) by Chernozhukov et al. (2021).
 
 ## Usage
 The key function is `super_riesz`. The argument `m` allows for customization of the causal parameter of interest for which the Riesz Representer is estimated. 
 
-Examples:
-- Mean counterfactual outcome, no conditioning: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W]]$. Set `m <- \\(natural, shifted, conditional, conditional_mean) shifted`.
-- Mean counterfactual outcome, with conditioning: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = A^d, W] | A \in \mathcal{B}]$. Set `m <- \\(natural, shifted, conditional, conditional_mean) shifted * conditional`.
-
 ## Example
-Estimate the Riesz Representer for $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W]]$ and $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W] | A = 0]$ . 
+Estimate the Riesz Representer for the Average Treatment Effect: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W]] - \mathbb{E}[Y \mid A = 0, W]]$. 
 ```
 # Simulate data
 library(tidyverse)
@@ -47,29 +43,19 @@ data <- tibble(
   Y = rnorm(N, mean = W + A, sd = 0.5)
 )
 
-data_shifted <- mutate(data, A = 1)
-
-# Without conditioning
-m <- \(natural, shifted, conditional_indicator, conditional_mean) shifted
+vars <- c("W", "A")
+m <- \(alpha, data) alpha(data("treatment")) - alpha(data("control"))
 fit <- super_riesz(
-  data[, c("A", "W")], 
-  data_shifted[, c("A", "W")], 
+  data[, vars], 
+  list(
+    "control" = mutate(data[, vars], A = 0),
+    "treatment" = mutate(data[, vars], A = 1)
+  ),
   library = c("glm", "torch"), 
   m = m
 )
-predict(fit, data_shifted)
 
-# With conditioning
-m <- \(natural, shifted, conditional_indicator, conditional_mean) shifted * conditional_indicator
-conditional_indicator <- matrix(data$A == 0, ncol = 1)
-fit <- super_riesz(
-  data[, c("W", "A")], 
-  data_shifted[, c("W", "A")], 
-  conditional_indicator = conditional_indicator,
-  library = c("glm", "torch"), 
-  m = m
-)
-predict(fit, data_shifted)
+predict(fit, data[, vars])
 
 ```
 

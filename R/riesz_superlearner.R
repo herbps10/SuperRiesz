@@ -23,8 +23,8 @@ riesz_superlearner_weights <- function(learners, task, folds) {
 #'
 #' @import mlr3
 #' @export
-super_riesz <- function(data, data_shifted, library, conditional_indicator = matrix(ncol = 1, rep(1, nrow(data))), m = \(natural, shifted, conditional_indicator, conditional_mean) shifted, folds = 5, discrete = TRUE) {
-  task <- TaskRiesz$new(id = "superriesz", data, data_shifted, conditional_indicator, m)
+super_riesz <- function(data, alternatives, library, m = \(alpha, data) alpha(data()), folds = 5, discrete = TRUE) {
+  task <- TaskRiesz$new(id = "superriesz", backend = data, alternatives = alternatives, m = m)
 
   if(is.list(library)) {
     learners <- lapply(library, \(learner) {

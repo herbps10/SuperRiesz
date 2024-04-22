@@ -1,30 +1,38 @@
 torch_estimate_representer <-
-  function(natural,
-           shifted,
-           conditional_indicator,
+  function(data,
            hidden = 20,
            epochs = 500,
            learning_rate = 1e-3,
            seed = 1,
-           m = \(natural, shifted) shifted,
+           constrain_positive = TRUE,
+           m = \(learner, data) learner(data()),
            dropout = 0.1) {
-    d_in <- ncol(natural)
+    d_in <- ncol(data())
     d_out <- 1
 
     torch::torch_manual_seed(seed)
 
-    natural <- torch::torch_tensor(as.matrix(natural), dtype = torch::torch_float())
-    shifted <- torch::torch_tensor(as.matrix(shifted), dtype = torch::torch_float())
-
-    riesz <- torch::nn_sequential(
-      torch::nn_linear(d_in, hidden),
-      torch::nn_elu(),
-      torch::nn_linear(hidden, hidden),
-      torch::nn_elu(),
-      torch::nn_dropout(dropout),
-      torch::nn_linear(hidden, d_out),
-      torch::nn_softplus()
-    )
+    if(constrain_positive == TRUE) {
+      riesz <- torch::nn_sequential(
+        torch::nn_linear(d_in, hidden),
+        torch::nn_elu(),
+        torch::nn_linear(hidden, hidden),
+        torch::nn_elu(),
+        torch::nn_dropout(dropout),
+        torch::nn_linear(hidden, d_out),
+        torch::nn_softplus()
+      )
+    }
+    else {
+      riesz <- torch::nn_sequential(
+        torch::nn_linear(d_in, hidden),
+        torch::nn_elu(),
+        torch::nn_linear(hidden, hidden),
+        torch::nn_elu(),
+        torch::nn_dropout(dropout),
+        torch::nn_linear(hidden, d_out)
+      )
+    }
 
     Map(\(x) torch::nn_init_normal_(x, 0, 0.1), riesz$parameters)
 
@@ -38,16 +46,10 @@ torch_estimate_representer <-
       weight_decay = 0
     )
 
-    conditional_indicator <- torch::torch_tensor(conditional_indicator)
-    conditional_mean <- conditional_indicator$mean(dtype = torch::torch_float())
-
     scheduler <- torch::lr_one_cycle(optimizer, max_lr = learning_rate, total_steps = epochs)
     for (epoch in 1:epochs) {
-      rr <- learner(natural)
-      rr_shifted <- learner(shifted)
-
       # Regression loss
-      loss <- (rr$pow(2))$mean(dtype = torch::torch_float()) - (2 * m(rr, rr_shifted, conditional_indicator, conditional_mean))$mean(dtype = torch::torch_float())
+      loss <- (learner(data())$pow(2) - (2 * m(learner, data)))$mean(dtype = torch::torch_float())
 
       if (epoch %% 20 == 0) {
         cat("Epoch: ", epoch, " Loss: ", loss$item(), "\n")
@@ -69,13 +71,14 @@ LearnerRieszTorch <- R6::R6Class(
   "LearnerRieszTorch",
   inherit = mlr3::Learner,
   public = list(
-    #' @importFrom paradox ps p_int p_dbl
+    #' @importFrom paradox ps p_int p_dbl p_lgl
     initialize = function() {
       params <- ps(
         hidden = p_int(1L, default = 20L, tags = "train"),
         epochs = p_int(1L, default = 20L, tags = "train"),
         dropout = p_dbl(0, 1, default = 0.1, tags = "train"),
         learning_rate = p_dbl(default = 1e3, tags = "train"),
+        constrain_positive = p_lgl(default = TRUE, tags = "train"),
         seed = p_int(1L, default = 1L,  tags = "train")
       )
 
@@ -88,34 +91,43 @@ LearnerRieszTorch <- R6::R6Class(
       )
     },
     loss = function(task) {
-      natural <- self$model(torch::torch_tensor(as.matrix(task$natural()), dtype = torch::torch_float()))
-      shifted <- self$model(torch::torch_tensor(as.matrix(task$shifted()), dtype = torch::torch_float()))
-
-      conditional_indicator <- torch::torch_tensor(task$conditional_indicator())
-      conditional_mean      <- conditional_indicator$mean(dtype = torch::torch_float())
-
-      loss <- (natural$pow(2))$mean(dtype = torch::torch_float()) - 2 * (task$m(natural, shifted, conditional_indicator, conditional_mean))$mean(dtype = torch::torch_float())
+      data <- private$.torch_data(task)
+      loss <- (self$alpha(data()) - 2 * task$m(self$alpha, data))$mean(dtype = torch::torch_float())
       torch::as_array(loss)
+    },
+    alpha = function(x) {
+      self$model(torch::torch_tensor(as.matrix(x), dtype = torch::torch_float()))
     }
   ),
   private = list(
     .model = NULL,
+    .torch_data = function(task) {
+      # Convert natural data to torch tensor
+      torch_data <- torch::torch_tensor(as.matrix(task$data()), dtype = torch::torch_float())
+
+      # Convert all alternative versions of the data to torch tensors
+      torch_alternatives = lapply(names(task$alternatives), \(x) torch::torch_tensor(as.matrix(task$data(x)), dtype = torch::torch_float()))
+      names(torch_alternatives) <- names(task$alternatives)
+
+      function(key = NA) {
+        if(is.na(key)) return(torch_data)
+        return(torch_alternatives[[key]])
+      }
+    },
     .train = function(task) {
       pv <- self$param_set$get_values(tags = "train")
 
       self$model <-
         mlr3misc::invoke(
           torch_estimate_representer,
-          natural = task$natural(),
-          shifted = task$shifted(),
+          data = private$.torch_data(task),
           m = task$m,
-          conditional_indicator = task$conditional_indicator(),
           .args = pv
         )
     },
     .predict = function(task) {
-      natural <- self$model(torch::torch_tensor(as.matrix(task$natural()), dtype = torch::torch_float()))
-      list(response = torch::as_array(natural)[, 1])
+      x <- self$alpha(task$data())
+      list(response = torch::as_array(x)[, 1])
     }
   )
 )

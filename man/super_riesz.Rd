@@ -6,10 +6,9 @@
 \usage{
 super_riesz(
   data,
-  data_shifted,
+  alternatives,
   library,
-  conditional_indicator = matrix(ncol = 1, rep(1, nrow(data))),
-  m = function(natural, shifted, conditional_indicator, conditional_mean) shifted,
+  m = function(alpha, data) alpha(data()),
   folds = 5,
   discrete = TRUE
 )
@@ -17,17 +16,17 @@ super_riesz(
 \arguments{
 \item{data}{data frame containing observations as originally observed}
 
-\item{data_shifted}{data frame containing observations after treatment intervention has been performed}
-
 \item{library}{vector or list specifying learners to be included in the ensemble}
-
-\item{conditional_indicator}{matrix indicating which observations are included in conditioning set for causal parameter of interest}
 
 \item{m}{functional used to define causal parameter of interest for which Riesz Representer is to be estimated}
 
 \item{folds}{number of cross-fitting folds}
 
 \item{discrete}{logical indicating whether discrete or continuous SuperLearner is to be used}
+
+\item{data_shifted}{data frame containing observations after treatment intervention has been performed}
+
+\item{conditional_indicator}{matrix indicating which observations are included in conditioning set for causal parameter of interest}
 }
 \description{
 Ensemble estimation of Riesz Representers

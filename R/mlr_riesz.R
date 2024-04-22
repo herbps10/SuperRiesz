@@ -3,10 +3,10 @@ TaskRiesz <- R6::R6Class(
   inherit = Task,
   public = list(
     m = NULL,
+    alternatives = NULL,
     initialize = function(id,
                           backend,
-                          backend_shifted,
-                          conditional_indicator,
+                          alternatives = list(),
                           m,
                           label = NA_character_,
                           extra_args = list()) {
@@ -17,26 +17,22 @@ TaskRiesz <- R6::R6Class(
         label = label,
         extra_args = extra_args
       )
-      private$.backend_shifted <- as_data_backend(backend_shifted)
-      private$.conditional_indicator <- conditional_indicator
+      self$alternatives <- lapply(alternatives, as_data_backend)
       self$m <- m
     },
-    natural = function() {
-      self$data()
-    },
-    shifted = function() {
-      rows <- private$.row_roles$use
-      cols <- private$.col_roles$feature
-      data_format = "data.table"
-      private$.backend_shifted$data(rows, cols, data_format)
-    },
-    conditional_indicator = function() {
-      rows <- private$.row_roles$use
-      private$.conditional_indicator[rows]
+    data = function(key = NA, ...) {
+      if(is.na(key)) {
+        super$data(...)
+      }
+      else {
+        rows <- private$.row_roles$use
+        cols <- private$.col_roles$feature
+        if(!all(cols %in% self$alternatives[[key]]$colnames)) {
+          cols <- setdiff(self$alternatives[[key]]$colnames, "..row_id")
+        }
+        data_format = "data.table"
+        self$alternatives[[key]]$data(rows, cols, data_format)
+      }
     }
-  ),
-  private = list(
-    .conditional_indicator = NULL,
-    .backend_shifted = NULL
   )
 )

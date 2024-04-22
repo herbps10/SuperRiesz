@@ -4,7 +4,7 @@
 #' @param ... additional arguments (not currently used)
 #' @export
 predict.super_riesz <- function(object, newdata, ...) {
-  task <- TaskRiesz$new(id = "superriesz", newdata, newdata, matrix(1, ncol = 1, nrow = nrow(newdata)), object$m)
+  task <- TaskRiesz$new(id = "superriesz", newdata, list(), m = object$m)
 
   # Generate predictions
   preds <- matrix(

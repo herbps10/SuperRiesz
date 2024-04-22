@@ -1,20 +1,23 @@
-glm_estimate_representer <- function(natural,
-  shifted,
-  conditional_indicator,
+glm_estimate_representer <- function(data,
   m,
-  hidden = 20,
-  epochs = 500,
-  learning_rate = 1e-3,
-  dropout = 0.1) {
+  constrain_positive = TRUE) {
+  if(constrain_positive == TRUE) {
+    transform <- exp
+  }
+  else {
+    transform <- \(x) x
+  }
+
   pred <- function(beta, x) {
-    exp(as.matrix(cbind(1, x)) %*% beta)
+    transform(as.matrix(cbind(1, x)) %*% beta)
   }
 
   loss <- function(beta) {
-    mean(pred(beta, natural)^2 - 2 * m(pred(beta, natural), pred(beta, shifted), conditional_indicator, mean(conditional_indicator)))
+    alpha <- function(x) pred(beta, x)
+    mean(alpha(data())^2 - 2 * m(alpha, data)[[1]])
   }
 
-  pars <- numeric(ncol(natural) + 1)
+  pars <- numeric(ncol(data()) + 1)
   x <- optim(pars, fn = loss, lower = -20, upper = 20, method = "L-BFGS-B")
   beta <- x$par
   beta
@@ -26,44 +29,50 @@ LearnerRieszGLM <- R6::R6Class(
   "LearnerRieszGLM",
   inherit = mlr3::Learner,
   public = list(
+    #' @importFrom paradox ps p_lgl
     initialize = function() {
+      params <- ps(
+        constrain_positive = p_lgl(default = TRUE, tags = "train")
+      )
+
       super$initialize(
         id = "riesz.torch",
         task_type = "riesz",
         predict_types = c("response"),
-        feature_types = c("logical", "integer", "numeric")
+        feature_types = c("logical", "integer", "numeric"),
+        param_set = params
       )
     },
     loss = function(task) {
-      natural <- task$natural()
-      shifted <- task$shifted()
-      m_natural <- as.matrix(cbind(1, natural))
-      m_shifted <- as.matrix(cbind(1, shifted))
-      conditional_indicator <- task$conditional_indicator()
-      l <- mean(
-        exp(m_natural %*% self$model)^2 - 2 * task$m(exp(m_natural %*% self$model), exp(m_shifted %*% self$model), conditional_indicator, mean(conditional_indicator))
+      mean(
+        self$alpha(task$data()) - 2 * task$m(self$alpha, task$data)[[1]]
       )
-      l
+    },
+    alpha = function(x) {
+      pv <- self$param_set$get_values(tags = "train")
+      constrain_positive <- TRUE
+      if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
+      transform <- \(x) x
+      if(constrain_positive == TRUE) transform <- exp
+      transform(as.matrix(cbind(1, x)) %*% self$model)
     }
   ),
   private = list(
     .model = NULL,
-    .train = function(task, epochs) {
+
+    .train = function(task) {
       pv <- self$param_set$get_values(tags = "train")
 
       self$model <-
         mlr3misc::invoke(
           glm_estimate_representer,
-          natural = task$natural(),
-          shifted = task$shifted(),
+          data = task$data,
           m = task$m,
-          conditional_indicator = task$conditional_indicator(),
           .args = pv
         )
     },
     .predict = function(task) {
-      data <- task$natural()
-      response <- exp(as.matrix(cbind(1, data)) %*% self$model)
+      response <- self$alpha(task$data())
       list(response = response)
     }
   )
