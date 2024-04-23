@@ -74,7 +74,7 @@ LearnerRieszTorch <- R6::R6Class(
     },
     loss = function(task) {
       data <- private$.torch_data(task)
-      loss <- (self$alpha(data()) - 2 * task$m(self$alpha, data))$mean(dtype = torch::torch_float())
+      loss <- (self$alpha(data()$pow(2)) - 2 * task$m(self$alpha, data))$mean(dtype = torch::torch_float())
       torch::as_array(loss)
     },
     alpha = function(x) {

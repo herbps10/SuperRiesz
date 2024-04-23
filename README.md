@@ -67,6 +67,11 @@ predict(fit, data[, vars])
 
 ## Learners
 
+### `constant`
+Learner that always returns a constant
+
+Parameters:
+- `constant`: constant to return
 
 ### `glm`
 Linear learner based on `optim`. 

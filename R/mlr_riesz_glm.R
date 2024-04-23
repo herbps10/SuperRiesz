@@ -14,11 +14,11 @@ glm_estimate_representer <- function(data,
 
   loss <- function(beta) {
     alpha <- function(x) pred(beta, x)
-    mean(alpha(data())^2 - 2 * m(alpha, data)[[1]])
+    mean(alpha(data())^2 - 2 * m(alpha, data)[,1])
   }
 
   pars <- numeric(ncol(data()) + 1)
-  x <- optim(pars, fn = loss, lower = -20, upper = 20, method = "L-BFGS-B")
+  x <- optim(pars, fn = loss)
   beta <- x$par
   beta
 }
@@ -36,7 +36,7 @@ LearnerRieszGLM <- R6::R6Class(
       )
 
       super$initialize(
-        id = "riesz.torch",
+        id = "riesz.glm",
         task_type = "riesz",
         predict_types = c("response"),
         feature_types = c("logical", "integer", "numeric"),
@@ -45,7 +45,7 @@ LearnerRieszGLM <- R6::R6Class(
     },
     loss = function(task) {
       mean(
-        self$alpha(task$data()) - 2 * task$m(self$alpha, task$data)[[1]]
+        self$alpha(task$data())^2 - 2 * task$m(self$alpha, task$data)[[1]]
       )
     },
     alpha = function(x) {

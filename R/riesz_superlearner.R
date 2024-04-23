@@ -10,8 +10,11 @@ riesz_superlearner_weights <- function(learners, task, folds) {
     preds[resampling$test_set(fold), ] <- unlist(lapply(cv_learners, \(x) x$predict(task$clone()$filter(resampling$test_set(fold)))$response))
   }
 
+  risks <- colMeans(cv_risks)
+  names(risks) <- unlist(lapply(learners, \(x) x$id))
+
   list(
-    risks = colMeans(cv_risks),
+    risks = risks,
     preds = preds
   )
 }
@@ -64,6 +67,7 @@ super_riesz <- function(data, library, alternatives = list(), m = \(alpha, data)
 
   if(folds == 1) {
     cv_risks <- unlist(lapply(learners, \(learner) learner$loss(task)))
+    names(cv_risks) <- unlist(lapply(learners, \(learner) learner$id))
     cv_preds <- matrix(ncol = length(learners), nrow = task$nrow, unlist(lapply(learners, \(learner) learner$predict(task)$response)))
   }
 

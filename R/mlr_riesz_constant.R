@@ -20,7 +20,7 @@ LearnerRieszConstant <- R6::R6Class(
     },
     loss = function(task) {
       mean(
-        self$alpha(task$data()) - 2 * task$m(self$alpha, task$data)[[1]]
+        self$alpha(task$data())^2 - 2 * task$m(self$alpha, task$data)[[1]]
       )
     },
     alpha = function(x) {
