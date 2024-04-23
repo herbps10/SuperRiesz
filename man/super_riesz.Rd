@@ -6,11 +6,10 @@
 \usage{
 super_riesz(
   data,
-  alternatives,
   library,
+  alternatives = list(),
   m = function(alpha, data) alpha(data()),
-  folds = 5,
-  discrete = TRUE
+  folds = 5
 )
 }
 \arguments{
@@ -21,8 +20,6 @@ super_riesz(
 \item{m}{functional used to define causal parameter of interest for which Riesz Representer is to be estimated}
 
 \item{folds}{number of cross-fitting folds}
-
-\item{discrete}{logical indicating whether discrete or continuous SuperLearner is to be used}
 
 \item{data_shifted}{data frame containing observations after treatment intervention has been performed}
 
