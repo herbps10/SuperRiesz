@@ -15,7 +15,9 @@ glm_estimate_representer <- function(data,
 
   loss <- function(beta) {
     alpha <- function(x) pred(beta, x)
-    mean(alpha(data())^2 - 2 * m(alpha, data)[,1])
+    y <- m(alpha, data)
+    if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
+    mean(alpha(data())^2 - 2 * y)
   }
 
   pars <- numeric(ncol(data()) + 1)
