@@ -67,19 +67,32 @@ predict(fit, data[, vars])
 
 ## Learners
 
-### `torch`
-Simple neural network learner based on `torch`.
-
-Parameters:
-- `hidden`: number of neurons in each hidden layer (integer)
-- `learning_rate`: training learning rate (positive float)
-- `epochs`: number of training epochs (integer)
-- `dropout`: dropout in hidden layer during training (float between 0 and 1)
-- `constrain_positive`: whether to constrain predictions to be positive (true or false)
-- `seed`: torch random seed (optional)
 
 ### `glm`
 Linear learner based on `optim`. 
 
 Parameters:
 - `constrain_positive`: whether to constrain predictions to be positive (true or false)
+
+### `torch`
+General neural network learner based on `torch`
+
+Parameters:
+- `architecture`: function which has a single parameter, the input dimension, and returns a `torch` neural network architecture.
+- `learning_rate`: learning rate (positive float)
+- `epochs`: number of training epochs (integer)
+- `verbose`: logical
+- `seed`: torch random seed (optional)
+
+### `nn`
+Simple neural network learner based on `torch`.
+
+Parameters:
+- `hidden`: number of neurons in each hidden layer (integer)
+- `layers`: number of layers (integer)
+- `learning_rate`: training learning rate (positive float)
+- `epochs`: number of training epochs (integer)
+- `dropout`: dropout in hidden layer during training (float between 0 and 1)
+- `constrain_positive`: whether to constrain predictions to be positive (true or false)
+- `verbose`: logical
+- `seed`: torch random seed (optional)
