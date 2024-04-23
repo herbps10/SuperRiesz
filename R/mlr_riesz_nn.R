@@ -1,3 +1,4 @@
+#' @import torch
 nn_architecture <-
   function(data,
            layers = 1,

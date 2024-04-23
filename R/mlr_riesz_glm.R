@@ -1,3 +1,4 @@
+#' @importFrom stats optim
 glm_estimate_representer <- function(data,
   m,
   constrain_positive = TRUE) {

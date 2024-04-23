@@ -22,13 +22,12 @@ riesz_superlearner_weights <- function(learners, task, folds) {
 #' Ensemble estimation of Riesz Representers
 #'
 #' @param data data frame containing observations as originally observed
-#' @param data_shifted data frame containing observations after treatment intervention has been performed
+#' @param alternatives named list of data frames representing alternative versions of the data set
 #' @param library vector or list specifying learners to be included in the ensemble
-#' @param conditional_indicator matrix indicating which observations are included in conditioning set for causal parameter of interest
 #' @param m functional used to define causal parameter of interest for which Riesz Representer is to be estimated
 #' @param folds number of cross-fitting folds
 #'
-#' @import mlr3
+#' @import mlr3 checkmate
 #' @export
 super_riesz <- function(data, library, alternatives = list(), m = \(alpha, data) alpha(data()), folds = 5) {
   checkmate::assert_vector(library, min.len = 1)

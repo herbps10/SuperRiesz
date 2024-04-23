@@ -17,13 +17,11 @@ super_riesz(
 
 \item{library}{vector or list specifying learners to be included in the ensemble}
 
+\item{alternatives}{named list of data frames representing alternative versions of the data set}
+
 \item{m}{functional used to define causal parameter of interest for which Riesz Representer is to be estimated}
 
 \item{folds}{number of cross-fitting folds}
-
-\item{data_shifted}{data frame containing observations after treatment intervention has been performed}
-
-\item{conditional_indicator}{matrix indicating which observations are included in conditioning set for causal parameter of interest}
 }
 \description{
 Ensemble estimation of Riesz Representers
