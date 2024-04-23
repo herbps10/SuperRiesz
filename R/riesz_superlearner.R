@@ -71,6 +71,12 @@ super_riesz <- function(data, library, alternatives = list(), m = \(alpha, data)
     weights <- numeric(length(library))
     weights[which.min(cv_risks)] <- 1
   }
+  else {
+    #par <- rep(0, length(library))
+    #optim(par, \(weights) {
+    #
+    #})
+  }
 
   sl <- list(learners = learners, weights = weights, m = m, risk = cv_risks)
   class(sl) <- "super_riesz"

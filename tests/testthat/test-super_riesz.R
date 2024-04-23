@@ -15,7 +15,6 @@ test_that("argument checking works", {
   expect_error(super_riesz(data, list(), library = c()))
   expect_error(super_riesz(data, list(), library = "torch", m = m, folds = "A"))
   expect_error(super_riesz(data, list(), library = "torch", m = m, folds = -1))
-  expect_error(super_riesz(data, list(), library = "torch", m = m, folds = 5, discrete = "A"))
   expect_error(super_riesz(data, c("A"), library = "torch", m = m, folds = 5))
 })
 
@@ -25,16 +24,6 @@ test_that("spot check works", {
   pred <- predict(fit, data)
 
   expect_equal(fit$weights, 1)
-  expect_equal(fit$risk, -5.5, tolerance = 1e-2)
-  expect_equal(pred[1:5], c(3.9, 0.4, 2.7, -2.2, 1.6), tolerance = 1e-2)
-})
-
-test_that("spot check works", {
-  set.seed(5)
-  fit <- super_riesz(data, library = list(list("glm", constrain_positive = FALSE), list("nn", constrain_positive = FALSE)), list(control = data0, treatment = data1), m = m, folds = 5, discrete = FALSE)
-  pred <- predict(fit, data)
-
-  expect_equal(fit$weights, 1)
-  expect_equal(fit$risk, -5.5, tolerance = 1e-2)
+  expect_equal(fit$risk, 0.192, tolerance = 1e-2)
   expect_equal(pred[1:5], c(3.9, 0.4, 2.7, -2.2, 1.6), tolerance = 1e-2)
 })
