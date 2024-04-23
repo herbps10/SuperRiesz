@@ -24,6 +24,12 @@ test_that("risks have learner names", {
   expect_equal(names(fit$risk), c("riesz.glm", "riesz.constant"))
 })
 
+test_that("GLM learner beats constant learner (sanity check)", {
+  set.seed(5)
+  expect_no_error(fit <- super_riesz(data, library = list(list("glm", constrain_positive = FALSE), list("constant", constant = 0.1)), list(control = data0, treatment = data1), m = m, folds = 5))
+  expect_equal(unlist(fit$weights), c(1, 0))
+})
+
 test_that("spot check works", {
   set.seed(5)
   fit <- super_riesz(data[, c("W", "A")], library = list(list("glm", constrain_positive = FALSE)), list(control = data0, treatment = data1), m = m, folds = 5)
