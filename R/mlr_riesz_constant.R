@@ -14,7 +14,7 @@ LearnerRieszConstant <- R6::R6Class(
         id = "riesz.constant",
         task_type = "riesz",
         predict_types = c("response"),
-        feature_types = c("logical", "integer", "numeric"),
+        feature_types = c("logical", "integer", "numeric", "factor"),
         param_set = params
       )
     },
