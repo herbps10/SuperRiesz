@@ -55,7 +55,7 @@ fit <- super_riesz(
     "control" = mutate(data[, vars], A = 0),
     "treatment" = mutate(data[, vars], A = 1)
   ),
-  library = c("glm", "torch"), 
+  library = c("glm", "nn"), 
   m = m
 )
 
