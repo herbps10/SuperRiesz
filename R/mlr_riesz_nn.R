@@ -13,7 +13,7 @@ nn_architecture <-
   d_in <- ncol(data())
   d_out <- 1
 
-  middle_layers <- lapply(1:layers, \(x) torch::nn_sequential(torch::nn_linear(hidden, hidden), torch::nn_elu()))
+  middle_layers <- lapply(1:layers, \(x) torch::nn_sequential(torch::nn_linear(hidden, hidden), torch::nn_dropout(dropout), torch::nn_elu()))
 
   if(constrain_positive == TRUE) {
     architecture <- \(d_in) torch::nn_sequential(
@@ -21,7 +21,6 @@ nn_architecture <-
       torch::nn_elu(),
       do.call(torch::nn_sequential, middle_layers),
       torch::nn_linear(hidden, d_out),
-      torch::nn_dropout(dropout),
       torch::nn_softplus()
     )
   }
@@ -30,8 +29,7 @@ nn_architecture <-
       torch::nn_linear(d_in, hidden),
       torch::nn_elu(),
       do.call(torch::nn_sequential, middle_layers),
-      torch::nn_linear(hidden, d_out),
-      torch::nn_dropout(dropout)
+      torch::nn_linear(hidden, d_out)
     )
   }
 
