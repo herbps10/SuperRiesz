@@ -32,6 +32,7 @@ Arguments:
 - `alternatives`: named list containing any alternative versions of the dataset. 
 - `library`: vector or list of candidate learners.
 - `m`: function defining the parameter mapping.
+- `folds`: number of cross-validation folds (default = 5)
 
 ## Example
 Estimate the Riesz Representer for the Average Treatment Effect: $\theta = \mathbb{E}[\mathbb{E}[Y \mid A = 1, W]] - \mathbb{E}[Y \mid A = 0, W]]$. Define $\bar{Q}(A, W) = \mathbb{E}[Y \mid A, W]$. Then $m(O, \bar{Q}) = \bar{Q}(1, W) - \bar{Q}(0, W)$.  
