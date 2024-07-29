@@ -4,6 +4,7 @@ nn_architecture <-
            layers = 1,
            hidden = 20,
            epochs = 500,
+           lambda = 0,
            learning_rate = 1e-3,
            seed = 1,
            constrain_positive = TRUE,

@@ -5,6 +5,7 @@ torch_estimate_representer <-
            learning_rate = 1e-3,
            verbose = FALSE,
            seed = 1,
+           lambda = 0,
            m = \(learner, data) learner(data()),
            ...) {
     d_in <- ncol(data())
@@ -26,10 +27,11 @@ torch_estimate_representer <-
       weight_decay = 0
     )
 
+
     scheduler <- torch::lr_one_cycle(optimizer, max_lr = learning_rate, total_steps = epochs)
     for (epoch in 1:epochs) {
       # Regression loss
-      loss <- (learner(data())$pow(2) - (2 * m(learner, data)))$mean(dtype = torch::torch_float())
+      loss <- ((learner(data())$pow(2)) - (2 * m(learner, data)))$mean(dtype = torch::torch_float()) + lambda * Reduce(`+`, Map(\(x) x$pow(2)$sum(), riesz$parameters))
 
       if (verbose == TRUE && (epoch %% 20 == 0)) {
         cat("Epoch: ", epoch, " Loss: ", loss$item(), "\n")
@@ -58,6 +60,7 @@ LearnerRieszTorch <- R6::R6Class(
         epochs = p_int(1L, default = 20L, tags = "train"),
         learning_rate = p_dbl(default = 1e3, tags = "train"),
         seed = p_int(1L, default = 1L, tags = "train"),
+        lambda = p_dbl(default = 0, tags = "train"),
         verbose = p_lgl(default = FALSE, tags = "train"),
         ...
       )
