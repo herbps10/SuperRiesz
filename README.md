@@ -56,7 +56,7 @@ fit <- super_riesz(
     "control" = mutate(data[, vars], A = 0),
     "treatment" = mutate(data[, vars], A = 1)
   ),
-  library = c("glm", "nn"), 
+  library = c("linear", "nn"), 
   m = m
 )
 
@@ -101,3 +101,10 @@ Parameters:
 - `constrain_positive`: whether to constrain predictions to be positive (true or false)
 - `verbose`: logical
 - `seed`: torch random seed (optional)
+
+### `linear`
+Linear model learner based on `torch`
+
+Parameters:
+- `learning_rate`: training learning rate (positive float)
+- `epochs`: number of training epochs (integer)
