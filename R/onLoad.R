@@ -6,11 +6,11 @@
   )), "type")
 
   mlr_reflections$task_col_roles$riesz = mlr3::mlr_reflections$task_col_roles$regr
-  #mlr_reflections$learner_predict_types$riesz <- list(natural = "natural", shifted = "shifted")
   mlr_reflections$learner_predict_types$riesz <- list(response = "response")
 
   mlr_learners$add(key = "riesz.constant", LearnerRieszConstant)
   mlr_learners$add(key = "riesz.nn", LearnerRieszNN)
+  mlr_learners$add(key = "riesz.linear", LearnerRieszLinear)
   mlr_learners$add(key = "riesz.torch", LearnerRieszTorch)
   mlr_learners$add(key = "riesz.glm", LearnerRieszGLM)
 }
