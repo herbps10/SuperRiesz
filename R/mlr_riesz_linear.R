@@ -1,10 +1,10 @@
 #' @import torch
-nn_architecture <-
+linear_nn_architecture <-
   function(data,
            epochs = 500,
-           lambda = 0,
            learning_rate = 1e-3,
            seed = 1,
+           lambda = 0,
            constrain_positive = TRUE,
            verbose = FALSE,
            m = \(learner, data) learner(data())) {
@@ -13,13 +13,13 @@ nn_architecture <-
 
     if(constrain_positive == TRUE) {
       architecture <- \(d_in) torch::nn_sequential(
-        torch::nn_linear(d_hidden, d_out),
+        torch::nn_linear(d_in, d_out, bias = FALSE),
         torch::nn_softplus()
       )
     }
     else {
       architecture <- \(d_in) torch::nn_sequential(
-        torch::nn_linear(d_hidden, d_out),
+        torch::nn_linear(d_in, d_out, bias = FALSE),
       )
     }
 
@@ -45,7 +45,7 @@ LearnerRieszLinear <- R6::R6Class(
 
       self$architecture <-
         mlr3misc::invoke(
-          nn_architecture,
+          linear_nn_architecture,
           data = private$.torch_data(task),
           m = task$m,
           .args = pv
