@@ -23,22 +23,24 @@ riesz_superlearner_weights <- function(learners, task, folds) {
 #'
 #' @param data data frame containing observations as originally observed
 #' @param alternatives named list of data frames representing alternative versions of the data set
+#' @param extra named list of additional data (such as weights)
 #' @param library vector or list specifying learners to be included in the ensemble
 #' @param m functional used to define causal parameter of interest for which Riesz Representer is to be estimated
 #' @param folds number of cross-fitting folds
 #'
 #' @import mlr3 checkmate
 #' @export
-super_riesz <- function(data, library, alternatives = list(), m = \(alpha, data) alpha(data()), folds = 5) {
+super_riesz <- function(data, library, alternatives = list(), extra = list(), m = \(alpha, data) alpha(data()), folds = 5) {
   checkmate::assert_vector(library, min.len = 1)
   checkmate::assert_function(m)
   checkmate::assert_int(folds, lower = 1)
   checkmate::assert_list(alternatives)
+  checkmate::assert_list(extra)
 
   discrete <- TRUE
   checkmate::assert_logical(discrete)
 
-  task <- TaskRiesz$new(id = "superriesz", backend = data, alternatives = alternatives, m = m)
+  task <- TaskRiesz$new(id = "superriesz", backend = data, alternatives = alternatives, extra = extra, m = m)
 
   if(is.list(library)) {
     learners <- lapply(library, \(learner) {

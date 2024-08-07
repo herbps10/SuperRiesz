@@ -44,6 +44,8 @@ torch_estimate_representer <-
       scheduler$step()
     }
 
+    #browser()
+
     riesz$eval()
     riesz
   }
@@ -61,6 +63,7 @@ LearnerRieszTorch <- R6::R6Class(
         learning_rate = p_dbl(default = 1e3, tags = "train"),
         seed = p_int(1L, default = 1L, tags = "train"),
         lambda = p_dbl(default = 0, tags = "train"),
+        interactions = p_int(1L, default = 1L, tags = "data"),
         verbose = p_lgl(default = FALSE, tags = "train"),
         ...
       )
@@ -88,14 +91,20 @@ LearnerRieszTorch <- R6::R6Class(
     .model = NULL,
     .torch_data = function(task) {
       # Convert natural data to torch tensor
-      torch_data <- torch::torch_tensor(as.matrix(task$data()), dtype = torch::torch_float())
+      pv <- self$param_set$get_values(tags = "data")
+
+      torch_data <- torch::torch_tensor(as.matrix(add_interactions(task$data(), pv$interactions)), dtype = torch::torch_float())
 
       # Convert all alternative versions of the data to torch tensors
-      torch_alternatives = lapply(names(task$alternatives), \(x) torch::torch_tensor(as.matrix(task$data(x)), dtype = torch::torch_float()))
+      torch_alternatives = lapply(names(task$alternatives), \(x) torch::torch_tensor(as.matrix(add_interactions(task$data(x), pv$interactions)), dtype = torch::torch_float()))
       names(torch_alternatives) <- names(task$alternatives)
+
+      torch_extra = lapply(names(task$extra), \(x) torch::torch_tensor(as.matrix(task$data(x)), dtype = torch::torch_float()))
+      names(torch_extra) <- names(task$extra)
 
       function(key = NA) {
         if(is.na(key)) return(torch_data)
+        if(key %in% names(torch_extra)) return(torch_extra[[key]])
         return(torch_alternatives[[key]])
       }
     },
@@ -112,7 +121,8 @@ LearnerRieszTorch <- R6::R6Class(
         )
     },
     .predict = function(task) {
-      x <- self$alpha(task$data())
+      pv <- self$param_set$get_values(tags = "data")
+      x <- self$alpha(add_interactions(task$data(), pv$interactions))
       list(response = torch::as_array(x)[, 1])
     }
   )

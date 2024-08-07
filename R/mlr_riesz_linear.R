@@ -9,6 +9,7 @@ linear_nn_architecture <-
            verbose = FALSE,
            m = \(learner, data) learner(data())) {
     d_in <- ncol(data())
+    print(d_in)
     d_out <- 1
 
     if(constrain_positive == TRUE) {

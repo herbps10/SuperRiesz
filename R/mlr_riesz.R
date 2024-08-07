@@ -4,9 +4,11 @@ TaskRiesz <- R6::R6Class(
   public = list(
     m = NULL,
     alternatives = NULL,
+    extra = NULL,
     initialize = function(id,
                           backend,
                           alternatives = list(),
+                          extra = list(),
                           m,
                           label = NA_character_,
                           extra_args = list()) {
@@ -18,6 +20,7 @@ TaskRiesz <- R6::R6Class(
         extra_args = extra_args
       )
       self$alternatives <- lapply(alternatives, as_data_backend)
+      self$extra <- lapply(extra, as_data_backend)
       self$m <- m
     },
     data = function(key = NA, ...) {
@@ -27,11 +30,15 @@ TaskRiesz <- R6::R6Class(
       else {
         rows <- private$.row_roles$use
         cols <- private$.col_roles$feature
-        if(!all(cols %in% self$alternatives[[key]]$colnames)) {
-          cols <- setdiff(self$alternatives[[key]]$colnames, "..row_id")
+
+        df <- self$alternatives
+        if(!(key %in% names(df))) df <- self$extra
+
+        if(!all(cols %in% df[[key]]$colnames)) {
+          cols <- setdiff(df[[key]]$colnames, "..row_id")
         }
         data_format = "data.table"
-        self$alternatives[[key]]$data(rows, cols, data_format)
+        df[[key]]$data(rows, cols, data_format)
       }
     }
   )
