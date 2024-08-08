@@ -31,7 +31,9 @@ torch_estimate_representer <-
     scheduler <- torch::lr_one_cycle(optimizer, max_lr = learning_rate, total_steps = epochs)
     for (epoch in 1:epochs) {
       # Regression loss
-      loss <- ((learner(data())$pow(2)) - (2 * m(learner, data)))$mean(dtype = torch::torch_float()) + lambda * Reduce(`+`, Map(\(x) x$pow(2)$sum(), riesz$parameters))
+      loss <- ((learner(data())$pow(2)) - (2 * m(learner, data)))$mean(dtype = torch::torch_float()) +
+        lambda * (learner(data()))$pow(2)$mean() +
+        lambda * m(learner, data)$pow(2)$mean()
 
       if (verbose == TRUE && (epoch %% 20 == 0)) {
         cat("Epoch: ", epoch, " Loss: ", loss$item(), "\n")
