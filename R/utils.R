@@ -8,10 +8,12 @@
       for(i in 1:nrow(vars)) {
         var <- vars[i, ]
         if(is.data.table(df)) {
-          df[, paste0(var, collapse = "_")] <- prod(df[, ..var])
+          y <- apply(df[, ..var], 1, prod)
+          df[, paste0(var, collapse = "_")] <- y
         }
         else {
-          df[, paste0(var, collapse = "_")] <- prod(df[, var])
+          y <- apply(df[, var], 1, prod)
+          df[, paste0(var, collapse = "_")] <- y
         }
       }
     }
