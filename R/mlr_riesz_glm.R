@@ -18,15 +18,18 @@ glm_estimate_representer <- function(data,
     alpha <- function(x) pred(beta, x)
     y <- m(alpha, data)
     if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
-    (mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * mean(beta^2))
+    mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * exp(sum(beta^2))
   }
 
   pars <- numeric(ncol(data()))
   x1 <- optim(pars, fn = loss)
   x2 <- optim(pars, fn = loss, method = "BFGS")
 
+  if(x2$value < -1e10) browser()
   x <- x1
   if(x2$value < x1$value && x2$convergence == 0) x <- x2
+
+  print(x$value)
 
   beta <- x$par
   print(beta)
