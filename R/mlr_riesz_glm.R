@@ -22,17 +22,9 @@ glm_estimate_representer <- function(data,
   }
 
   pars <- numeric(ncol(data()))
-  x1 <- optim(pars, fn = loss)
-  x2 <- optim(pars, fn = loss, method = "BFGS")
-
-  if(x2$value < -1e10) browser()
-  x <- x1
-  if(x2$value < x1$value && x2$convergence == 0) x <- x2
-
-  print(x$value)
+  x <- optim(pars, fn = loss, method = "BFGS")
 
   beta <- x$par
-  print(beta)
   beta
 }
 
