@@ -22,9 +22,10 @@ glm_estimate_representer <- function(data,
   }
 
   pars <- numeric(ncol(data()))
-  x <- optim(pars, fn = loss, method = "BFGS")
+  #x <- optim(pars, fn = loss, method = "BFGS")
+  x <- nlm(loss, pars, gradtol = 1e-3)
 
-  beta <- x$par
+  beta <- x$estimate
   beta
 }
 
