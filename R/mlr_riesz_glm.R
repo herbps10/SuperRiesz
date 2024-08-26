@@ -15,6 +15,7 @@ glm_estimate_representer <- function(data,
   }
 
   loss <- function(beta) {
+    beta <- -5 + 10 * plogis(beta)
     alpha <- function(x) pred(beta, x)
     y <- m(alpha, data)
     if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
