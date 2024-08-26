@@ -4,7 +4,7 @@ glm_estimate_representer <- function(data,
   lambda = 0,
   constrain_positive = TRUE) {
   if(constrain_positive == TRUE) {
-    transform <- exp
+    transform <- \(x) 100 * plogis(x - 4.5)
   }
   else {
     transform <- \(x) x
@@ -15,18 +15,21 @@ glm_estimate_representer <- function(data,
   }
 
   loss <- function(beta) {
-    beta <- -5 + 10 * plogis(beta)
     alpha <- function(x) pred(beta, x)
     y <- m(alpha, data)
     if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
     mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * exp(sum(beta^2))
   }
 
-  pars <- numeric(ncol(data()))
-  #x <- optim(pars, fn = loss, method = "BFGS")
-  x <- nlm(loss, pars, gradtol = 1e-3)
+  beta <- numeric(ncol(data()))
+  tryCatch({
+    x <- nlm(loss, beta)
+    beta <- x$estimate
+  },
+  error = \(e) {
+    print(e)
+  })
 
-  beta <- x$estimate
   beta
 }
 
@@ -63,7 +66,7 @@ LearnerRieszGLM <- R6::R6Class(
       constrain_positive <- TRUE
       if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
       transform <- \(x) x
-      if(constrain_positive == TRUE) transform <- exp
+      if(constrain_positive == TRUE) transform <- \(x) 100 * plogis(x - 4.5)
       transform(as.matrix(x) %*% self$model)
     }
   ),
