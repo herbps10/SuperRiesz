@@ -18,7 +18,7 @@ glm_estimate_representer <- function(data,
     alpha <- function(x) pred(beta, x)
     y <- m(alpha, data)
     if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
-    mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * exp(sum(beta^2))
+    mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * sum(beta[beta > 0])
   }
 
   beta <- numeric(ncol(data()))
