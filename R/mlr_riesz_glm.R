@@ -4,7 +4,7 @@ glm_estimate_representer <- function(data,
   lambda = 0,
   constrain_positive = TRUE) {
   if(constrain_positive == TRUE) {
-    transform <- exp
+    transform <- \(x) x
   }
   else {
     transform <- \(x) x
@@ -18,7 +18,7 @@ glm_estimate_representer <- function(data,
     alpha <- function(x) pred(beta, x)
     y <- m(alpha, data)
     if(is.data.frame(y) || is.data.table(y)) y <- y[[1]]
-    mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * sum(beta[beta > 0])
+    mean((alpha(data())^2 - 2 * y)[, 1]) + lambda * sum(abs(beta))
   }
 
   beta <- numeric(ncol(data()))
@@ -68,7 +68,8 @@ LearnerRieszGLM <- R6::R6Class(
       constrain_positive <- TRUE
       if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
       transform <- \(x) x
-      if(constrain_positive == TRUE) transform <- exp
+      #if(constrain_positive == TRUE) transform <- exp
+      if(constrain_positive == TRUE) transform <- \(x) x
       transform(as.matrix(x) %*% self$model)
     }
   ),
@@ -104,8 +105,11 @@ LearnerRieszGLM <- R6::R6Class(
         )
     },
     .predict = function(task) {
+      pv <- self$param_set$get_values(tags = c("train", "data"))
+      constrain_positive <- TRUE
+      if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
       response <- self$alpha(private$.glm_data(task)())
-      response <- ifelse(response > 1e2, 1e2, response)
+      if(constrain_positive == TRUE) response <- ifelse(response < 0, 0, response)
       list(response = response)
     }
   )
