@@ -23,9 +23,10 @@ glm_estimate_representer <- function(data,
 
   beta <- numeric(ncol(data()))
   tryCatch({
-    x <- nlm(loss, beta)
-    #x <- optim(beta, loss, method = "BFGS")
-    beta <- x$estimate
+    #x <- nlm(loss, beta)
+    #beta <- x$estimate
+    x <- optim(beta, loss, method = "BFGS")
+    beta <- x$par
   },
   error = \(e) {
     print(e)
