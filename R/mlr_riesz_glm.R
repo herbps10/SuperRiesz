@@ -4,7 +4,7 @@ glm_estimate_representer <- function(data,
   lambda = 0,
   constrain_positive = TRUE) {
   if(constrain_positive == TRUE) {
-    transform <- \(x) x
+    transform <- \(x) ifelse(x < 0, 0, x)
   }
   else {
     transform <- \(x) x
@@ -68,8 +68,7 @@ LearnerRieszGLM <- R6::R6Class(
       constrain_positive <- TRUE
       if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
       transform <- \(x) x
-      #if(constrain_positive == TRUE) transform <- exp
-      if(constrain_positive == TRUE) transform <- \(x) x
+      if(constrain_positive == TRUE) transform <- \(x) ifelse(x < 0, 0, x)
       transform(as.matrix(x) %*% self$model)
     }
   ),
@@ -105,11 +104,7 @@ LearnerRieszGLM <- R6::R6Class(
         )
     },
     .predict = function(task) {
-      pv <- self$param_set$get_values(tags = c("train", "data"))
-      constrain_positive <- TRUE
-      if(!is.null(pv$constrain_positive)) constrain_positive <- pv$constrain_positive
       response <- self$alpha(private$.glm_data(task)())
-      if(constrain_positive == TRUE) response <- ifelse(response < 0, 0, response)
       list(response = response)
     }
   )
