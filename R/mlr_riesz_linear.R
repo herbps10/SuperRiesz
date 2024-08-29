@@ -15,7 +15,8 @@ linear_nn_architecture <-
     if(constrain_positive == TRUE) {
       architecture <- \(d_in) torch::nn_sequential(
         torch::nn_linear(d_in, d_out, bias = FALSE),
-        torch::nn_softplus()
+        #torch::nn_softplus(beta = 100)
+        torch::nn_relu()
       )
     }
     else {
